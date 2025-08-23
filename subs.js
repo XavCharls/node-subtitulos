@@ -121,9 +121,9 @@ function setDefaultSubs(file) {
         subtitleTracks.forEach(e => {
             let defaultVal = (defaultTrack == e.properties.uid.value ? 1 : 0)
             if (IS_TEST) {
-                console.log(`mkvpropedit "${file}" -e track:=${defaultTrack} --set flag-default=${defaultVal}`)
+                console.log(`mkvpropedit "${file}" -e track:=${e.properties.uid.value} --set flag-default=${defaultVal}`)
             }
-            commands.push(`mkvpropedit "${file}" -e track:=${defaultTrack} --set flag-default=${defaultVal}`)
+            commands.push(`mkvpropedit "${file}" -e track:=${e.properties.uid.value} --set flag-default=${defaultVal}`)
         })
 
         if (!IS_TEST) {
