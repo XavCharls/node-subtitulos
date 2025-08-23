@@ -102,7 +102,12 @@ function setDefaultSubs(file) {
         let subtitleTracks = mkvData.tracks.filter(e => e.type == 'subtitles')
         let hasCastillian  = subtitleTracks.find(e => e.properties.language_ietf == 'es-ES')
         let hasSpanish     = subtitleTracks.find(e => e.properties.language == 'spa')
-        //TODO saltarse los que no tengan subtitulos
+        
+        if (!subtitleTracks.length) {
+            console.log("Skipped " + file)
+            return false
+        }
+
         let defaultTrack   = subtitleTracks[0].properties.uid.value;
         let commands       = []
         TOTAL_SUBS         += subtitleTracks.length
