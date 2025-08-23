@@ -87,7 +87,7 @@ async function getFiles(dir) {
  */
 function setDefaultSubs(file) {
     TOTAL_FILES++
-    exec(`mkvmerge -J "${file}"`, {maxBuffer: 1024 * 1024 * 5}, (error, stdout, stderr) => {
+    exec(`mkvmerge -J "${file}"`, {maxBuffer: undefined}, (error, stdout, stderr) => {
         if (error) {
             console.error(`error: ${error.message}`)
             return false
@@ -153,7 +153,7 @@ function run(command, queue = [], file = null) {
         command = queue.shift()
     }
 
-    exec(command, {maxBuffer: 1024 * 1024 * 5}, (error, stdout, stderr) => {
+    exec(command, {maxBuffer: undefined}, (error, stdout, stderr) => {
         if (error) {
             console.error(`error: ${error.message}`)
             return false
