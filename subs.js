@@ -12,6 +12,7 @@ const stat = promisify(fs.stat);
 var IS_TEST = process.argv[3] == 'test'
 var TOTAL_FILES = 0
 var TOTAL_SUBS = 0
+var TOTAL_AUDIOS = 0
 
 index()
 
@@ -100,33 +101,72 @@ function setDefaultSubs(file) {
 
         let mkvData        = parse(stdout)
         let subtitleTracks = mkvData.tracks.filter(e => e.type == 'subtitles')
-        let hasCastillian  = subtitleTracks.find(e => e.properties.language_ietf == 'es-ES')
-        let hasSpanish     = subtitleTracks.find(e => e.properties.language == 'spa')
+        let subtitleHasCastillian  = subtitleTracks.find(e => e.properties.language_ietf == 'es-ES')
+        let subtitleHasSpanish     = subtitleTracks.find(e => e.properties.language == 'spa')
+
+        let audioTracks = mkvData.tracks.filter(e => e.type == 'audio')
+        let audioHasJapanses  = audioTracks.find(e => e.properties.language == 'jpn')
+        let audioHasEnglish  = audioTracks.find(e => e.properties.language_ietf == 'eng')
+        let audioHasSpanish  = audioTracks.find(e => e.properties.language_ietf == 'spa')
+
         
-        if (!subtitleTracks.length) {
+        if (!subtitleTracks.length && audioTracks.length == 1) {
             console.log("Skipped " + file)
             return false
         }
 
-        let defaultTrack   = subtitleTracks[0].properties.uid.value;
-        let commands       = []
-        TOTAL_SUBS         += subtitleTracks.length
+        let defaultSubTrack   = subtitleTracks[0].properties.uid.value;
+        let defaultAudioTrack = audioTracks[0].properties.uid.value;
+        let commands          = []
+        TOTAL_SUBS            += subtitleTracks.length
+        TOTAL_AUDIOS          += audioTracks.length
+
         if (IS_TEST) {
-            console.log("Archivos: " + TOTAL_FILES + " Subtitulos: " + TOTAL_SUBS)
+            console.log("Archivos: " + TOTAL_FILES + " Subtitulos: " + TOTAL_SUBS + " Audios: " + TOTAL_AUDIOS)
         }
 
-        if (hasSpanish) {
-            defaultTrack = hasSpanish.properties.uid.value
+        //cambiar el ordern de los if para cambiar las preferencias de los idiomas (el ultimo que se cumpla es el que se marca como default)
+
+        if (subtitleHasSpanish) {
+            defaultSubTrack = subtitleHasSpanish.properties.uid.value
         }
 
-        if (hasCastillian) {
-            defaultTrack = hasCastillian.properties.uid.value
+        if (subtitleHasCastillian) {
+            defaultSubTrack = subtitleHasCastillian.properties.uid.value
         }
 
+        if (audioHasSpanish) {
+            defaultAudioTrack = audioHasSpanish.properties.uid.value
+        }
+
+        if (audioHasEnglish) {
+            defaultAudioTrack = audioHasEnglish.properties.uid.value
+        }
+
+        if (audioHasJapanses) {
+            defaultAudioTrack = audioHasJapanses.properties.uid.value
+        }
+
+        if (IS_TEST) {
+            console.log('#########Subtitulos#########')
+        }
         subtitleTracks.forEach(e => {
-            let defaultVal = (defaultTrack == e.properties.uid.value ? 1 : 0)
+            let defaultVal = (defaultSubTrack == e.properties.uid.value ? 1 : 0)
             if (IS_TEST) {
                 console.log(`mkvpropedit "${file}" -e track:=${e.properties.uid.value} --set flag-default=${defaultVal}`)
+                console.log(`(${e.properties.track_name ? e.properties.track_name  : e.properties.language})`)
+            }
+            commands.push(`mkvpropedit "${file}" -e track:=${e.properties.uid.value} --set flag-default=${defaultVal}`)
+        })
+
+        if (IS_TEST) {
+            console.log('#########Audios#########')
+        }
+        audioTracks.forEach(e => {
+            let defaultVal = (defaultAudioTrack == e.properties.uid.value ? 1 : 0)
+            if (IS_TEST) {
+                console.log(`mkvpropedit "${file}" -e track:=${e.properties.uid.value} --set flag-default=${defaultVal}`)
+                console.log(`(${e.properties.track_name ? e.properties.track_name  : e.properties.language})`)
             }
             commands.push(`mkvpropedit "${file}" -e track:=${e.properties.uid.value} --set flag-default=${defaultVal}`)
         })
