@@ -164,6 +164,12 @@ function setDefaultSubs(file) {
             defaultAudioTrack = audioHasJapanses.properties.uid.value
         }
 
+        console.log(
+            file.match(/[^/]+$/i)[0],
+            "sub:" + JSON.stringify(subtitleTracks.find(e => e.properties.uid == defaultSubTrack).properties.track_name),
+            "audio:" + JSON.stringify(audioTracks.find(e => e.properties.uid == defaultAudioTrack).properties.track_name)
+        )
+
         if (IS_TEST) {
             console.log('#########Subtitulos#########')
         }
@@ -195,43 +201,47 @@ function setDefaultSubs(file) {
 }
 
 function getSpanishSub(subtitles) {
-  let esMatch = new RegExp(createDiacriticInsensitiveWord("es"), 'i');
-  let onlyEs = subtitles.filter(e => e.properties.language == 'spa' || (e.properties.language == 'und' && e.properties.track_name && e.properties.track_name.match(esMatch)));
-  onlyEs = onlyEs.map(e => e.properties);
-  let latMatch       = new RegExp(createDiacriticInsensitiveWord("lat"), 'i');
-  let laMatch        = new RegExp("^" + createDiacriticInsensitiveWord("la") + "$", 'i');
-  let venezuelaMatch = new RegExp(createDiacriticInsensitiveWord("venezuela"), 'i');
-  let karaokeMatch   = new RegExp(createDiacriticInsensitiveWord("karaoke"), 'i');
-  let forzadoMatch   = new RegExp(createDiacriticInsensitiveWord("forzado"), 'i');
-  let forcedMatch    = new RegExp(createDiacriticInsensitiveWord("forced"), 'i');
-  let cartelesMatch  = new RegExp(createDiacriticInsensitiveWord("carteles"), 'i');
-  let signsMatch     = new RegExp(createDiacriticInsensitiveWord("signs"), 'i');
-  let songsMatch     = new RegExp(createDiacriticInsensitiveWord("songs"), 'i');
-  let portuguesMatch = new RegExp(createDiacriticInsensitiveWord("portugues"), 'i');
+    let esMatch = new RegExp(createDiacriticInsensitiveWord("es"), 'i');
+    let onlyEs = subtitles.filter(e => e.properties.language == 'spa' || (e.properties.language == 'und' && e.properties.track_name && e.properties.track_name.match(esMatch)));
+    onlyEs = onlyEs.map(e => e.properties);
+    let latMatch       = new RegExp(createDiacriticInsensitiveWord("lat"), 'i');
+    let laMatch        = new RegExp("^" + createDiacriticInsensitiveWord("la") + "$", 'i');
+    let venezuelaMatch = new RegExp(createDiacriticInsensitiveWord("venezuela"), 'i');
+    let karaokeMatch   = new RegExp(createDiacriticInsensitiveWord("karaoke"), 'i');
+    let forzadoMatch   = new RegExp(createDiacriticInsensitiveWord("forzado"), 'i');
+    let forcedMatch    = new RegExp(createDiacriticInsensitiveWord("forced"), 'i');
+    let cartelesMatch  = new RegExp(createDiacriticInsensitiveWord("carteles"), 'i');
+    let signsMatch     = new RegExp(createDiacriticInsensitiveWord("signs"), 'i');
+    let songsMatch     = new RegExp(createDiacriticInsensitiveWord("songs"), 'i');
+    let portuguesMatch = new RegExp(createDiacriticInsensitiveWord("portugues"), 'i');
 
-  let castellanoMatch  = new RegExp(createDiacriticInsensitiveWord("castellano") + '|' + createDiacriticInsensitiveWord("europe") + '|' + createDiacriticInsensitiveWord("castilian") + '|' + createDiacriticInsensitiveWord("españa") + '|' + createDiacriticInsensitiveWord("spanish\\[esp\\]") + '|' + createDiacriticInsensitiveWord("spanish \\[esp\\]") + '|' + createDiacriticInsensitiveWord("selecta") + '|' + createDiacriticInsensitiveWord("Spanish \\(Spain\\)") + '|' + createDiacriticInsensitiveWord("Spanish Spain"), 'i');
+    let castellanoMatch  = new RegExp(createDiacriticInsensitiveWord("castellano") + '|' + createDiacriticInsensitiveWord("europe") + '|' + createDiacriticInsensitiveWord("castilian") + '|' + createDiacriticInsensitiveWord("españa") + '|' + createDiacriticInsensitiveWord("spanish\\[esp\\]") + '|' + createDiacriticInsensitiveWord("spanish \\[esp\\]") + '|' + createDiacriticInsensitiveWord("selecta") + '|' + createDiacriticInsensitiveWord("Spanish \\(Spain\\)") + '|' + createDiacriticInsensitiveWord("Spanish Spain"), 'i');
 
-  onlyEs = onlyEs.filter(e => e.language_ietf !== "es-419");
-  onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(latMatch));
-  onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(laMatch));
-  onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(venezuelaMatch));
-  onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(karaokeMatch));
-  onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(forzadoMatch));
-  onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(forcedMatch));
-  onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(cartelesMatch));
-  onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(signsMatch));
-  onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(songsMatch));
-  onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(portuguesMatch));
+    onlyEs = onlyEs.filter(e => e.language_ietf !== "es-419");
+    onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(latMatch));
+    onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(laMatch));
+    onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(venezuelaMatch));
+    onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(karaokeMatch));
+    onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(forzadoMatch));
+    onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(forcedMatch));
+    onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(cartelesMatch));
+    onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(signsMatch));
+    onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(songsMatch));
+    onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(portuguesMatch));
 
-  let castillianSub = onlyEs.filter(e => e.track_name && e.track_name.match(castellanoMatch));
-  if (castillianSub.length > 0) {
-    castillianSub = castillianSub[0]
-  } else {
-    // si no hay un claro subtitulo castellano, nos quedamos con el primero que sea español o indeterminado
-    castillianSub = onlyEs[0]
-  }
+    let castillianSub = onlyEs.filter(e => e.track_name && e.track_name.match(castellanoMatch));
+    if (castillianSub.length > 0) {
+        castillianSub = castillianSub[0]
+    } else {
+        // si no hay un claro subtitulo castellano, nos quedamos con el primero que sea español o indeterminado
+        castillianSub = onlyEs[0]
+    }
 
-  return {"properties": castillianSub}
+    if (castillianSub) {
+        return {"properties": castillianSub}
+    }
+
+    return false
 }
 
 function createDiacriticInsensitiveWord(word) {
@@ -291,7 +301,7 @@ function run(command, queue = [], file = null) {
             return false
         }
 
-        console.log("commands left: " + queue.length + (file ? ' del archivo ' + file : ''))
+        // console.log("commands left: " + queue.length + (file ? ' del archivo ' + file : ''))
 
         if (queue.length) {
             run(queue.shift(), queue, file)
