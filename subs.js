@@ -100,17 +100,24 @@ function setDefaultSubs(file) {
         }
 
         let mkvData        = parse(stdout)
-        let subtitleTracks = mkvData.tracks.filter(e => e.type == 'subtitles')
-        let subtitleHasCastillian  = subtitleTracks.find(e => e.properties.language_ietf == 'es-ES')
-        let subtitleHasSpanish     = subtitleTracks.find(e => e.properties.language == 'spa')
+        if (!mkvData || !mkvData.tracks) {
+            console.error("No se han podido leer los datos del mkv " + file)
+            return false
+        }
 
+        // subtitulos
+        let subtitleTracks = mkvData.tracks.filter(e => e.type == 'subtitles')
+        let subtitleHasCastillian = getSpanishSub(subtitleTracks);
+        let subtitleHasSpanish    = subtitleTracks.find(e => e.properties.language == 'spa')
+        let subtitleHasEnglish    = subtitleTracks.find(e => e.properties.language == 'eng')
+
+        // audios
         let audioTracks = mkvData.tracks.filter(e => e.type == 'audio')
         let audioHasJapanses  = audioTracks.find(e => e.properties.language == 'jpn')
-        let audioHasEnglish  = audioTracks.find(e => e.properties.language_ietf == 'eng')
-        let audioHasSpanish  = audioTracks.find(e => e.properties.language_ietf == 'spa')
+        let audioHasEnglish   = audioTracks.find(e => e.properties.language_ietf == 'eng')
+        let audioHasSpanish   = audioTracks.find(e => e.properties.language_ietf == 'spa')
 
-        
-        if (!subtitleTracks.length && audioTracks.length == 1) {
+        if (!subtitleTracks.length && audioTracks.length == 1 || (!subtitleTracks.length && !audioTracks.length)) {
             console.log("Skipped " + file)
             return false
         }
@@ -127,22 +134,32 @@ function setDefaultSubs(file) {
 
         //cambiar el ordern de los if para cambiar las preferencias de los idiomas (el ultimo que se cumpla es el que se marca como default)
 
+        // tercera preferencia de subtitulo
+        if (subtitleHasEnglish) {
+            defaultSubTrack = subtitleHasEnglish.properties.uid.value
+        }
+
+        // segunda preferencia de subtitulo
         if (subtitleHasSpanish) {
             defaultSubTrack = subtitleHasSpanish.properties.uid.value
         }
 
+        // Subtitulo preferido
         if (subtitleHasCastillian) {
             defaultSubTrack = subtitleHasCastillian.properties.uid.value
         }
 
+        // tercera preferencia de audio
         if (audioHasSpanish) {
             defaultAudioTrack = audioHasSpanish.properties.uid.value
         }
 
+        // segunda preferencia de audio
         if (audioHasEnglish) {
             defaultAudioTrack = audioHasEnglish.properties.uid.value
         }
 
+        // Audio preferido
         if (audioHasJapanses) {
             defaultAudioTrack = audioHasJapanses.properties.uid.value
         }
@@ -175,6 +192,77 @@ function setDefaultSubs(file) {
             run(null, commands, file.replace(import.meta.dirname + '/', ''))
         }
     });
+}
+
+function getSpanishSub(subtitles) {
+  let esMatch = new RegExp(createDiacriticInsensitiveWord("es"), 'i');
+  let onlyEs = subtitles.filter(e => e.properties.language == 'spa' || (e.properties.language == 'und' && e.properties.track_name && e.properties.track_name.match(esMatch)));
+  onlyEs = onlyEs.map(e => e.properties);
+  let latMatch       = new RegExp(createDiacriticInsensitiveWord("lat"), 'i');
+  let laMatch        = new RegExp("^" + createDiacriticInsensitiveWord("la") + "$", 'i');
+  let venezuelaMatch = new RegExp(createDiacriticInsensitiveWord("venezuela"), 'i');
+  let karaokeMatch   = new RegExp(createDiacriticInsensitiveWord("karaoke"), 'i');
+  let forzadoMatch   = new RegExp(createDiacriticInsensitiveWord("forzado"), 'i');
+  let forcedMatch    = new RegExp(createDiacriticInsensitiveWord("forced"), 'i');
+  let cartelesMatch  = new RegExp(createDiacriticInsensitiveWord("carteles"), 'i');
+  let signsMatch     = new RegExp(createDiacriticInsensitiveWord("signs"), 'i');
+  let songsMatch     = new RegExp(createDiacriticInsensitiveWord("songs"), 'i');
+  let portuguesMatch = new RegExp(createDiacriticInsensitiveWord("portugues"), 'i');
+
+  let castellanoMatch  = new RegExp(createDiacriticInsensitiveWord("castellano") + '|' + createDiacriticInsensitiveWord("europe") + '|' + createDiacriticInsensitiveWord("castilian") + '|' + createDiacriticInsensitiveWord("españa") + '|' + createDiacriticInsensitiveWord("spanish\\[esp\\]") + '|' + createDiacriticInsensitiveWord("spanish \\[esp\\]") + '|' + createDiacriticInsensitiveWord("selecta") + '|' + createDiacriticInsensitiveWord("Spanish \\(Spain\\)") + '|' + createDiacriticInsensitiveWord("Spanish Spain"), 'i');
+
+  onlyEs = onlyEs.filter(e => e.language_ietf !== "es-419");
+  onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(latMatch));
+  onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(laMatch));
+  onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(venezuelaMatch));
+  onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(karaokeMatch));
+  onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(forzadoMatch));
+  onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(forcedMatch));
+  onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(cartelesMatch));
+  onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(signsMatch));
+  onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(songsMatch));
+  onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(portuguesMatch));
+
+  let castillianSub = onlyEs.filter(e => e.track_name && e.track_name.match(castellanoMatch));
+  if (castillianSub.length > 0) {
+    castillianSub = castillianSub[0]
+  } else {
+    // si no hay un claro subtitulo castellano, nos quedamos con el primero que sea español o indeterminado
+    castillianSub = onlyEs[0]
+  }
+
+  return {"properties": castillianSub}
+}
+
+function createDiacriticInsensitiveWord(word) {
+    let mappings = {
+        'a': String.fromCharCode(65, 97, 192, 224, 193, 225, 194, 226, 195, 227, 196, 228, 229, 258, 259),
+        'e': String.fromCharCode(69, 101, 200, 232, 201, 233, 202, 234, 203, 235),
+        'i': String.fromCharCode(73, 105, 204, 236, 205, 237, 206, 238, 207, 239),
+        'o': String.fromCharCode(79, 111, 210, 242, 211, 243, 212, 244, 213, 245, 214, 246),
+        'n': String.fromCharCode(78, 110, 209, 241),
+        'u': String.fromCharCode(85, 117, 217, 249, 218, 250, 219, 251, 220, 252),
+        'c': String.fromCharCode(67, 99, 199, 231),
+        'y': String.fromCharCode(89, 121, 221, 253, 159, 255),
+    };
+
+    let a = new RegExp('['+mappings.a+']','gi')
+    let e = new RegExp('['+mappings.e+']','gi')
+    let i = new RegExp('['+mappings.i+']','gi')
+    let o = new RegExp('['+mappings.o+']','gi')
+    let n = new RegExp('['+mappings.n+']','gi')
+    let u = new RegExp('['+mappings.u+']','gi')
+    let c = new RegExp('['+mappings.c+']','gi')
+    let y = new RegExp('['+mappings.y+']','gi')
+
+    return word.replace(a, '['+mappings.a+']')
+               .replace(e, '['+mappings.e+']')
+               .replace(i, '['+mappings.i+']')
+               .replace(o, '['+mappings.o+']')
+               .replace(n, '['+mappings.n+']')
+               .replace(u, '['+mappings.u+']')
+               .replace(c, '['+mappings.c+']')
+               .replace(y, '['+mappings.y+']')
 }
 
 /**
