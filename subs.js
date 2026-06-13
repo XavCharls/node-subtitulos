@@ -218,6 +218,7 @@ function getSpanishSub(subtitles) {
     let castellanoMatch  = new RegExp(createDiacriticInsensitiveWord("castellano") + '|' + createDiacriticInsensitiveWord("europe") + '|' + createDiacriticInsensitiveWord("castilian") + '|' + createDiacriticInsensitiveWord("españa") + '|' + createDiacriticInsensitiveWord("spanish\\[esp\\]") + '|' + createDiacriticInsensitiveWord("spanish \\[esp\\]") + '|' + createDiacriticInsensitiveWord("selecta") + '|' + createDiacriticInsensitiveWord("Spanish \\(Spain\\)") + '|' + createDiacriticInsensitiveWord("Spanish Spain"), 'i');
 
     onlyEs = onlyEs.filter(e => e.language_ietf !== "es-419");
+    onlyEs = onlyEs.filter(e => !e.forced_track);
     onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(latMatch));
     onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(laMatch));
     onlyEs = onlyEs.filter(e => !e.track_name || !e.track_name.match(venezuelaMatch));
